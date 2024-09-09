@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gomoku Animé</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        #game-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        #board {
+            display: inline-grid;
+            grid-template-columns: repeat(15, 30px);
+            grid-gap: 1px;
+            background-color: #d4af37;
+            border: 2px solid #b8860b;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .cell {
+            width: 30px;
+            height: 30px;
+            background-color: #f0d984;
+            border: 1px solid #d4af37;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .cell:hover {
+            background-color: #ffe6a8;
+        }
+        .piece {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            margin: 2px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .piece::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(255,255,255,0.0));
+            transform: rotate(45deg);
+        }
+        .piece-X {
+            background: radial-gradient(circle at 65% 65%, #fff, #333);
+            animation: dropPiece 0.5s ease forwards;
+        }
+        .piece-O {
+            background: radial-gradient(circle at 65% 65%, #0a0a0a, #000);
+            animation: dropPiece 0.5s ease forwards;
+        }
+        .piece-O::after {
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), rgba(255,255,255,0.0));
+        }
+        @keyframes dropPiece {
+            0% { transform: translateY(-30px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        #status, #score {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        #replay {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: none;
+        }
+        #replay:hover {
+            background-color: #45a049;
+        }
+        #session-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="session-counter">Joueurs connectés: 1</div>
+    <div id="game-container">
+        <div id="board"></div>
+        <div id="status">Au tour du joueur X</div>
+        <div id="score">Score: X 0 - 0 O</div>
+        <button id="replay">Replay</button>
+    </div>
+
+    <script>
+        let currentPlayer = 'X';
+        let gameBoard = Array(15).fill().map(() => Array(15).fill(''));
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        let score = { X: 0, O: 0 };
+        let gameActive = true;
+
+        function createBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            for (let i = 0; i < 225; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.addEventListener('click', () => makeMove(i));
+                board.appendChild(cell);
+            }
+        }
+
+        function makeMove(index) {
+            if (!gameActive) return;
+            const row = Math.floor(index / 15);
+            const col = index % 15;
+            if (gameBoard[row][col] === '') {
+                gameBoard[row][col] = currentPlayer;
+                updateCell(index, currentPlayer);
+                playSound(currentPlayer);
+                if (checkWin(row, col)) {
+                    endGame(`Le joueur ${currentPlayer} a gagné !`);
+                } else {
+                    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                    document.getElementById('status').textContent = `Au tour du joueur ${currentPlayer}`;
+                }
+            }
+        }
+
+        function updateCell(index, player) {
+            const cell = document.getElementById('board').children[index];
+            const piece = document.createElement('div');
+            piece.className = `piece piece-${player}`;
+            cell.appendChild(piece);
+        }
+
+        function checkWin(row, col) {
+            const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
+            for (const [dx, dy] of directions) {
+                let count = 1;
+                for (let i = 1; i < 5; i++) {
+                    if (checkDirection(row, col, dx, dy, i)) count++;
+                    else break;
+                }
+                for (let i = 1; i < 5; i++) {
+                    if (checkDirection(row, col, -dx, -dy, i)) count++;
+                    else break;
+                }
+                if (count >= 5) return true;
+            }
+            return false;
+        }
+
+        function checkDirection(row, col, dx, dy, i) {
+            const newRow = row + i * dx;
+            const newCol = col + i * dy;
+            return newRow >= 0 && newRow < 15 && newCol >= 0 && newCol < 15 && 
+                   gameBoard[newRow][newCol] === currentPlayer;
+        }
+
+        function endGame(message) {
+            gameActive = false;
+            document.getElementById('status').textContent = message;
+            score[currentPlayer]++;
+            updateScore();
+            document.getElementById('replay').style.display = 'inline-block';
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = `Score: X ${score.X} - ${score.O} O`;
+        }
+
+        function playSound(player) {
+            const oscillator = audioContext.createOscillator();
+            oscillator.type = player === 'X' ? 'sine' : 'triangle';
+            oscillator.frequency.setValueAtTime(player === 'X' ? 440 : 554.37, audioContext.currentTime);
+            
+            const gainNode = audioContext.createGain();
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        function resetGame() {
+            gameBoard = Array(15).fill().map(() => Array(15).fill(''));
+            currentPlayer = 'X';
+            gameActive = true;
+            document.getElementById('status').textContent = "Au tour du joueur X";
+            document.getElementById('replay').style.display = 'none';
+            createBoard();
+        }
+
+        function manageSessionCounter() {
+            let sessionCount = parseInt(localStorage.getItem('sessionCount') || '0');
+            sessionCount++;
+            localStorage.setItem('sessionCount', sessionCount);
+            updateSessionCounter(sessionCount);
+
+            window.addEventListener('beforeunload', () => {
+                sessionCount--;
+                localStorage.setItem('sessionCount', sessionCount);
+            });
+
+            setInterval(() => {
+                let currentCount = parseInt(localStorage.getItem('sessionCount') || '0');
+                updateSessionCounter(currentCount);
+            }, 1000);
+        }
+
+        function updateSessionCounter(count) {
+            document.getElementById('session-counter').textContent = `Joueurs connectés: ${count}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            createBoard();
+            document.getElementById('replay').addEventListener('click', resetGame);
+            manageSessionCounter();
+        });
+    </script>
+</body>
+</html>
