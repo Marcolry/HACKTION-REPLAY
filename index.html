@@ -1,877 +1,196 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gomoku en ligne</title>
+    <title>SOLboard.games - Accueil</title>
+    <link rel="icon" type="image/png" href="https://firebasestorage.googleapis.com/v0/b/hacktion-replay-ombgig.appspot.com/o/HomeTest.png?alt=media&token=4bb97944-e962-4065-98a7-2f22e87fedce">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            min-height: 100vh;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        #game-container {
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            color: white;
             text-align: center;
-        }
-
-        #board {
-            display: inline-grid;
-            grid-template-columns: repeat(15, 30px);
-            grid-gap: 1px;
-            background-color: #d4af37;
-            border: 2px solid #b8860b;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-
-        .cell {
-            width: 30px;
-            height: 30px;
-            background-color: #f0d984;
-            border: 1px solid #d4af37;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .cell:hover {
-            background-color: #ffe6a8;
-        }
-
-        .piece {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            margin: 2px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            padding: 20px;
             position: relative;
             overflow: hidden;
         }
-
-        .piece::after {
+        .container {
+            max-width: 800px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+        #logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        #logo {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 20px;
+        }
+        #logo img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            transition: transform 1s ease;
+        }
+        #logo img:hover {
+            transform: rotate(360deg);
+        }
+        #logo::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.0));
-            transform: rotate(45deg);
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            background: linear-gradient(45deg, #ff00ea, #00fffb);
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(15px);
+            animation: glow 3s ease-in-out infinite alternate;
         }
-
-        .piece-White {
-            background: radial-gradient(circle at 65% 65%, #fff, #333);
-            animation: dropPiece 0.5s ease forwards;
+        .dice {
+            font-size: 80px;
         }
-
-        .piece-Black {
-            background: radial-gradient(circle at 65% 65%, #0a0a0a, #000);
-            animation: dropPiece 0.5s ease forwards;
+        .dice-left {
+            margin-right: 20px;
         }
-
-        .piece-Black::after {
-            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.0));
+        .dice-right {
+            margin-left: 20px;
         }
-
-        @keyframes dropPiece {
-            0% {
-                transform: translateY(-30px);
-                opacity: 0;
-            }
-
-            100% {
-                transform: translateY(0);
-                opacity: 1;
-            }
+        @keyframes waveAnimation {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
         }
-
-        #status,
-        #score,
-        #player-counter {
-            margin-top: 10px;
-            font-weight: bold;
+        #logo-container > * {
+            animation: waveAnimation 2s ease-in-out infinite;
         }
-
-        #buttons {
+        #logo-container > *:nth-child(1) { animation-delay: 0s; }
+        #logo-container > *:nth-child(2) { animation-delay: 0.2s; }
+        #logo-container > *:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes glow {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            line-height: 1.6;
+        }
+        .buttons {
             display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
         }
-
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #4CAF50;
+        .button {
+            display: flex;
+            align-items: center;
+            padding: 15px 30px;
+            font-size: 1.2rem;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 50px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 300px;
         }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        #replay {
-            display: none;
-        }
-
-        #game-id {
-            margin-top: 10px;
-            font-style: italic;
-        }
-
-        #buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-
-        #buttons button {
-            flex: 1;
-            margin: 0 10px;
-            padding: 15px 20px;
-        }
-
-        #create-game {
-            background-color: #4CAF50;
-        }
-
-        #join-game {
-            background-color: #2196F3;
-        }
-
-        #play-solo {
-            background-color: #FF9800;
-        }
-
-        #wallet-container {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            text-align: right;
-        }
-
-        #connect-phantom {
-            padding: 10px 20px;
-            font-size: 16px;
+        .button-phantom {
             background-color: #4e44ce;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
         }
-
-        #connect-phantom:hover {
+        .button-phantom:hover {
             background-color: #3c349e;
         }
-
-        #wallet-info {
-            display: none;
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 14px;
+        .button-anonymous {
+            background-color: #000000;
         }
-
-        #wallet-address {
-            font-weight: bold;
-            margin-bottom: 5px;
+        .button-anonymous:hover {
+            background-color: #000000;
         }
-
-        #wallet-balance {
-            color: #4e44ce;
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
         }
-
-        #donation-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #ff5722;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
+        .button-text {
+            flex-grow: 1;
+            text-align: center;
         }
-
-        #donation-button:hover {
-            background-color: #e64a19;
+        .phantom-logo {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            p {
+                font-size: 1rem;
+            }
+            .button {
+                padding: 12px 24px;
+                font-size: 1rem;
+                width: 250px;
+            }
+            .dice {
+                font-size: 60px;
+            }
         }
     </style>
-    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-    <script src="https://unpkg.com/@project-serum/sol-wallet-adapter@latest/dist/index.iife.js"></script>
-    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-
 </head>
-
 <body>
-
-    <button id="donation-button">Donation</button>
-
-    <div id="wallet-container">
-        <button id="connect-phantom">Connecter Phantom</button>
-        <div id="wallet-info">
-            <div id="wallet-address"></div>
-            <div id="wallet-balance"></div>
-            <div id="network-indicator"></div>
+    <div class="container">
+        <div id="logo-container">
+            <div class="dice dice-left">🎲</div>
+            <div id="logo">
+                <img src="https://firebasestorage.googleapis.com/v0/b/hacktion-replay-ombgig.appspot.com/o/HomeTest.png?alt=media&token=4bb97944-e962-4065-98a7-2f22e87fedce" alt="Logo SOLboard.games">
+            </div>
+            <div class="dice dice-right">🎲</div>
+        </div>
+        <h1>Solana Board Games</h1>
+        <p>Only Play to Earn PvP Games !</p>
+        <div class="buttons">
+            <a href="/menu.html?mode=phantom" class="button button-phantom">
+                <img src="https://firebasestorage.googleapis.com/v0/b/hacktion-replay-ombgig.appspot.com/o/PhantomLogoPNG.png?alt=media&token=c80772d4-f6a9-4e4c-b0ff-ec1607b66579" alt="Phantom Logo" class="phantom-logo">
+                <span class="button-text">Phantom</span>
+            </a>
+            <a href="/menu.html?mode=anonymous" class="button button-anonymous">
+                <img src="https://firebasestorage.googleapis.com/v0/b/hacktion-replay-ombgig.appspot.com/o/AnonEmojiPNG.png?alt=media&token=e859bf69-b667-4352-b5d2-6c6140082f98" alt="Anonyme Logo" class="phantom-logo">
+                <span class="button-text">Anonymous</span>
+            </a>
         </div>
     </div>
-
-    <div id="game-container">
-        <div id="player-counter">Joueurs connectés: 0</div>
-        <div id="board"></div>
-        <div id="status">En attente d'une partie...</div>
-        <div id="score-container">
-            <div>Score</div>
-            <div id="white-score">White (<span id="white-wallet"></span>): <span id="white-score-value">0</span></div>
-            <div id="black-score">Black (<span id="black-wallet"></span>): <span id="black-score-value">0</span></div>
-        </div>
-        <div id="game-id"></div>
-        <div id="buttons">
-            <button id="create-game">Create</button>
-            <button id="join-game">Join</button>
-            <button id="play-solo">Solo</button>
-        </div>
-        <button id="replay">Rejouer</button>
-        <div id="player-role" style="margin-top: 20px; font-weight: bold;">Vous êtes : Spectateur</div>
-    </div>
-
     <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-        import { getDatabase, ref, set, onValue, push, update, get, onDisconnect } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
-
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBmiq0jEr5utffbHcKvChACUMOJa7atqdM",
-            authDomain: "hacktion-replay-ombgig.firebaseapp.com",
-            databaseURL: "https://hacktion-replay-ombgig-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "hacktion-replay-ombgig",
-            storageBucket: "hacktion-replay-ombgig.appspot.com",
-            messagingSenderId: "110164206521",
-            appId: "1:110164206521:web:084a23958c5d91533b8c68"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed');
-
-        let currentPlayer = 'White';
-        let gameBoard = Array(15).fill().map(() => Array(15).fill(''));
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        let score = { White: 0, Black: 0 };
-        let gameActive = false;
-        let playerRole = 'spectator';
-        let currentGameId = null;
-        let connectedPlayers = 0;
-        let isSoloMode = false;
-
-        let phantomWallet;
-        let walletBalance;
-        let whiteWalletAddress = '';
-        let blackWalletAddress = '';
-
-        async function connectPhantomWallet() {
-            if ("solana" in window) {
-                const provider = window.solana;
-                if (provider.isPhantom) {
-                    try {
-                        const resp = await provider.connect();
-                        phantomWallet = resp.publicKey.toString();
-
-                        console.log("Connecté à Phantom Wallet:", phantomWallet);
-
-                        // Afficher les infos du wallet à l'utilisateur
-                        document.getElementById('connect-phantom').style.display = 'none';
-                        document.getElementById('wallet-info').style.display = 'block';
-                        document.getElementById('wallet-address').textContent = `${phantomWallet.slice(0, 4)}...${phantomWallet.slice(-4)}`;
-
-                        // Vérifier si l'utilisateur existe déjà dans Firebase
-                        const userRef = ref(database, `users/${phantomWallet}`);
-                        const snapshot = await get(userRef);
-
-                        const currentDate = new Date().toISOString();
-
-                        if (snapshot.exists()) {
-                            const userData = snapshot.val();
-
-                            // Incrémenter la session et mettre à jour lastVisit
-                            const newSessionCount = userData.session ? userData.session + 1 : 1;
-
-                            await update(userRef, {
-                                session: newSessionCount,
-                                lastVisit: currentDate
-                            });
-                            console.log("Ancien utilisateur est revenu:", phantomWallet, "Sessions:", newSessionCount);
-                        } else {
-                            // Créer un nouvel utilisateur
-                            await set(userRef, {
-                                publicKey: phantomWallet,
-                                dateJoined: currentDate,
-                                session: 1,
-                                lastVisit: currentDate
-                            });
-                            console.log("Nouvel utilisateur créé:", phantomWallet);
-                        }
-
-                        // Mettre à jour une fois le solde après la connexion
-                        await updateWalletBalance();
-                        updateNetworkIndicator();
-
-                        return phantomWallet;
-                    } catch (err) {
-                        console.error("Erreur de connexion à Phantom Wallet:", err);
-                    }
-                }
-            } else {
-                window.open("https://phantom.app/", "_blank");
-            }
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        async function sendSolWithPhantom() {
-            try {
-                // Vérifiez si Phantom est disponible
-                if (!window.solana || !window.solana.isPhantom) {
-                    console.log("Phantom Wallet n'est pas installé.");
-                    return;
-                }
-
-                // Connexion à Phantom
-                await window.solana.connect();
-
-                // Adresse publique de l'utilisateur connecté via Phantom
-                const fromAddress = window.solana.publicKey.toString();
-
-                // Créez une requête à votre API pour obtenir la transaction à signer
-                const response = await fetch("https://askmoona.app.n8n.cloud/webhook/SOLPhantom", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        fromAddress: fromAddress,
-                        toAddress: "HuexQhRdRHTXUrVN54nyVprKXTqxAiH8NDiFEgSdf3EG",  // Adresse de destination
-                        amount: 0.002  // Montant en SOL
-                    }),
-                });
-
-                // Vérifiez que la réponse du serveur est correcte
-                if (!response.ok) {
-                    throw new Error("Erreur lors de la requête vers le serveur.");
-                }
-
-                // Récupérez et parsez le corps de la réponse JSON (c'est un objet, pas un tableau)
-                const data = await response.json();
-
-                // Vérifiez si les champs nécessaires sont présents
-                if (!data.recentBlockhash || !data.instructions || !data.feePayer) {
-                    throw new Error("Transaction mal formée ou incomplète.");
-                }
-
-                // Recréez la transaction à partir des données JSON renvoyées par le serveur
-                let transaction = new solanaWeb3.Transaction({
-                    recentBlockhash: data.recentBlockhash,
-                    feePayer: new solanaWeb3.PublicKey(data.feePayer),
-                });
-
-                // Fonction pour décoder la chaîne base64 en Uint8Array
-                function base64ToUint8Array(base64) {
-                    const binary_string = window.atob(base64);
-                    const len = binary_string.length;
-                    const bytes = new Uint8Array(len);
-                    for (let i = 0; i < len; i++) {
-                        bytes[i] = binary_string.charCodeAt(i);
-                    }
-                    return bytes;
-                }
-
-                // Ajouter les instructions à la transaction
-                data.instructions.forEach(instructionData => {
-                    const keys = instructionData.keys.map(key => ({
-                        pubkey: new solanaWeb3.PublicKey(key.pubkey),
-                        isSigner: key.isSigner,
-                        isWritable: key.isWritable,
-                    }));
-
-                    const instruction = new solanaWeb3.TransactionInstruction({
-                        keys: keys,
-                        programId: new solanaWeb3.PublicKey(instructionData.programId),
-                        data: base64ToUint8Array(instructionData.data), // Décoder les données en base64
-                    });
-
-                    transaction.add(instruction);
-                });
-
-                // Signer la transaction avec Phantom
-                const signedTransaction = await window.solana.signTransaction(transaction);
-
-                // Envoyer la transaction signée sur le réseau Solana
-                const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed');
-                const signature = await connection.sendRawTransaction(signedTransaction.serialize());
-
-                // Confirmer la transaction sur la blockchain
-                await connection.confirmTransaction(signature);
-
-                console.log("Transaction réussie avec signature:", signature);
-                alert(`Transaction réussie ! Signature : ${signature}`);
-            } catch (error) {
-                console.error("Erreur lors de l'envoi de la transaction avec Phantom:", error);
-                alert(`Erreur: ${error.message}`);
-            }
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        function updateNetworkIndicator() {
-            const indicator = document.getElementById('network-indicator');
-            indicator.textContent = 'Réseau : Mainnet';
-            indicator.style.color = '#4CAF50';  // Vert pour indiquer le mainnet
-        }
-
-
-
-        async function fetchSolanaBalance(address) {
-            try {
-                console.log("Envoi de la requête à n8n avec l'adresse:", address);
-                const response = await fetch('https://askmoona.app.n8n.cloud/webhook/SOLBalance', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ Address: address })
-                });
-
-                console.log("Statut de la réponse:", response.status);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log("Données reçues:", data);
-
-                if (data.Balance !== undefined) {
-                    const solde = parseFloat(data.Balance);
-                    console.log("Solde récupéré:", solde);
-                    return solde;
-                } else {
-                    console.error("Format de réponse inattendu:", data);
-                    throw new Error("Format de réponse inattendu");
-                }
-            } catch (error) {
-                console.error("Erreur détaillée lors de la récupération du solde:", error);
-                throw error;
-            }
-        }
-
-        async function updateWalletBalance() {
-            console.log("Début de updateWalletBalance");
-            if (phantomWallet) {
-                try {
-                    console.log("Tentative de récupération du solde...");
-                    const balance = await fetchSolanaBalance(phantomWallet);
-                    console.log("Solde récupéré :", balance);
-
-                    const balanceElement = document.getElementById('wallet-balance');
-                    balanceElement.textContent = `SOL: ${balance.toFixed(6)}`;
-                    console.log("Texte de l'élément wallet-balance mis à jour :", balanceElement.textContent);
-                } catch (error) {
-                    console.error("Erreur détaillée lors de la récupération du solde:", error);
-                    const balanceElement = document.getElementById('wallet-balance');
-                    balanceElement.textContent = `Erreur: ${error.message}`;
-                }
-            } else {
-                console.log("Pas de wallet connecté");
-            }
-            console.log("Fin de updateWalletBalance");
-        }
-
-        function updateWalletDisplay() {
-            document.getElementById('white-wallet').textContent = whiteWalletAddress.slice(0, 4) + '...' + whiteWalletAddress.slice(-4);
-            document.getElementById('black-wallet').textContent = blackWalletAddress.slice(0, 4) + '...' + blackWalletAddress.slice(-4);
-        }
-
-        async function assignWalletToPlayer(player) {
-            const walletAddress = await connectPhantomWallet();
-            if (walletAddress) {
-                if (player === 'White') {
-                    whiteWalletAddress = walletAddress;
-                } else {
-                    blackWalletAddress = walletAddress;
-                }
-                updateWalletDisplay();
-            }
-        }
-
-        function createBoard() {
-            const board = document.getElementById('board');
-            board.innerHTML = '';
-            for (let i = 0; i < 225; i++) {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                cell.addEventListener('click', () => makeMove(i));
-                board.appendChild(cell);
-            }
-        }
-
-        function makeMove(index) {
-            if (!gameActive || (!isSoloMode && playerRole !== currentPlayer)) return;
-
-            const row = Math.floor(index / 15);
-            const col = index % 15;
-            if (gameBoard[row][col] === '') {
-                gameBoard[row][col] = currentPlayer;
-                updateCell(row, col, currentPlayer);
-
-                // Jouer le son pour le mode solo et multijoueur
-                playSound(currentPlayer);
-
-                const hasWon = checkWin(row, col);
-
-                if (!isSoloMode) {
-                    const gameRef = ref(database, `games/${currentGameId}`);
-                    update(gameRef, {
-                        [`board/${row}/${col}`]: currentPlayer,
-                        currentPlayer: hasWon ? currentPlayer : (currentPlayer === 'White' ? 'Black' : 'White')
-                    });
-                } else if (!hasWon) {
-                    currentPlayer = currentPlayer === 'White' ? 'Black' : 'White';
-                    document.getElementById('status').textContent = `Au tour du joueur ${currentPlayer}`;
-                }
-            }
-        }
-
-        function updateCell(row, col, player) {
-            const index = row * 15 + col;
-            const cell = document.getElementById('board').children[index];
-            const piece = document.createElement('div');
-            piece.className = `piece piece-${player}`;
-            cell.appendChild(piece);
-        }
-
-        function checkWin(row, col) {
-            const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
-            for (const [dx, dy] of directions) {
-                let count = 1;
-                for (let i = 1; i < 5; i++) {
-                    if (checkDirection(row, col, dx, dy, i)) count++;
-                    else break;
-                }
-                for (let i = 1; i < 5; i++) {
-                    if (checkDirection(row, col, -dx, -dy, i)) count++;
-                    else break;
-                }
-                if (count >= 5) {
-                    // Au lieu de terminer la partie immédiatement, on planifie la fin de partie
-                    setTimeout(() => delayedEndGame(currentPlayer), 500);
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        function delayedEndGame(winner) {
-            gameActive = false;
-            const message = `Le joueur ${winner} a gagné !`;
-            document.getElementById('status').textContent = message;
-            score[winner]++;
-            updateScore();
-            document.getElementById('replay').style.display = 'inline-block';
-            if (!isSoloMode) {
-                update(ref(database, `games/${currentGameId}`), {
-                    gameStatus: 'finished',
-                    winner: winner,
-                    gameActive: false
-                });
-            }
-        }
-
-        function checkDirection(row, col, dx, dy, i) {
-            const newRow = row + i * dx;
-            const newCol = col + i * dy;
-            return newRow >= 0 && newRow < 15 && newCol >= 0 && newCol < 15 &&
-                gameBoard[newRow][newCol] === currentPlayer;
-        }
-
-        function endGame(message) {
-            // Cette fonction n'est plus utilisée directement, mais nous la gardons au cas où
-            delayedEndGame(currentPlayer);
-        }
-
-        function updateScore() {
-            document.getElementById('white-score-value').textContent = score.White;
-            document.getElementById('black-score-value').textContent = score.Black;
-        }
-
-        function playSound(player) {
-            const oscillator = audioContext.createOscillator();
-            oscillator.type = player === 'White' ? 'sine' : 'triangle';
-            oscillator.frequency.setValueAtTime(player === 'White' ? 440 : 554.37, audioContext.currentTime);
-
-            const gainNode = audioContext.createGain();
-            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-
-            oscillator.start();
-            oscillator.stop(audioContext.currentTime + 0.5);
-        }
-
-        function resetGame() {
-            gameBoard = Array(15).fill().map(() => Array(15).fill(''));
-            currentPlayer = 'White';
-            gameActive = true;
-            document.getElementById('status').textContent = "Au tour du joueur White";
-            document.getElementById('replay').style.display = 'none';
-            createBoard();
-            if (!isSoloMode) {
-                set(ref(database, `games/${currentGameId}`), {
-                    board: gameBoard,
-                    currentPlayer: currentPlayer,
-                    gameActive: true,
-                    players: { White: true, Black: true }
-                });
-            }
-        }
-
-        function generateGameId() {
-            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let result = '';
-            for (let i = 0; i < 6; i++) {
-                result += characters.charAt(Math.floor(Math.random() * characters.length));
-            }
-            return result;
-        }
-
-        function createGame() {
-            currentGameId = generateGameId();
-            const newGameRef = ref(database, `games/${currentGameId}`);
-            set(newGameRef, {
-                board: Array(15).fill().map(() => Array(15).fill('')),
-                currentPlayer: 'White',
-                gameStatus: 'waiting',
-                players: { White: true, Black: false }
-            });
-            playerRole = 'White';
-            document.getElementById('player-role').textContent = `Vous êtes : ${playerRole}`;
-            document.getElementById('game-id').textContent = `ID de la partie : ${currentGameId}`;
-            startListeningToGameChanges();
-            assignWalletToPlayer('White');
-        }
-
-        function joinGame() {
-            const gameId = prompt("Entrez l'ID de la partie :");
-            if (gameId) {
-                const gameRef = ref(database, `games/${gameId}`);
-                get(gameRef).then((snapshot) => {
-                    if (snapshot.exists()) {
-                        const gameData = snapshot.val();
-                        if (!gameData.players.Black) {
-                            update(gameRef, {
-                                'players/Black': true,
-                                gameStatus: 'active'
-                            }).then(() => {
-                                currentGameId = gameId;
-                                playerRole = 'Black';
-                                document.getElementById('player-role').textContent = `Vous êtes : ${playerRole}`;
-                                document.getElementById('game-id').textContent = `ID de la partie : ${currentGameId}`;
-                                startListeningToGameChanges();
-                                assignWalletToPlayer('Black');
-                            }).catch((error) => {
-                                console.error("Erreur lors de la mise à jour de la partie :", error);
-                            });
-                        } else {
-                            alert("Cette partie est déjà complète.");
-                        }
-                    } else {
-                        alert("Aucune partie trouvée avec cet ID.");
-                    }
-                }).catch((error) => {
-                    console.error("Erreur lors de la récupération des données de la partie :", error);
-                });
-            }
-        }
-
-        function playSolo() {
-            isSoloMode = true;
-            gameActive = true;
-            playerRole = 'both'; // Le joueur contrôle les deux côtés
-            currentPlayer = 'White';
-            document.getElementById('status').textContent = "Mode solo. Au tour du joueur White";
-            document.getElementById('create-game').style.display = 'none';
-            document.getElementById('join-game').style.display = 'none';
-            document.getElementById('play-solo').style.display = 'none';
-            document.getElementById('player-role').textContent = "Vous êtes : Joueur solo";
-            resetGame();
-        }
-
-        function incrementPlayerCounter() {
-            const counterRef = ref(database, 'connectedPlayers');
-            get(counterRef).then((snapshot) => {
-                const currentCount = snapshot.val() || 0;
-                set(counterRef, currentCount + 1);
-            });
-
-            // Set up onDisconnect to decrement the counter when the user leaves
-            onDisconnect(counterRef).transaction((currentCount) => {
-                return (currentCount || 1) - 1;
-            });
-        }
-
-        function updatePlayerCounter() {
-            const counterRef = ref(database, 'connectedPlayers');
-            onValue(counterRef, (snapshot) => {
-                connectedPlayers = snapshot.val() || 0;
-                document.getElementById('player-counter').textContent = `Joueurs connectés: ${connectedPlayers}`;
-            });
-        }
-
-        function startListeningToGameChanges() {
-            const gameRef = ref(database, `games/${currentGameId}`);
-            onValue(gameRef, (snapshot) => {
-                const gameData = snapshot.val();
-                if (gameData) {
-                    console.log("Données de la partie mises à jour :", gameData);
-                    gameBoard = gameData.board;
-                    currentPlayer = gameData.currentPlayer;
-                    gameActive = gameData.gameActive !== false;
-
-                    if (playerRole !== 'spectator') {
-                        document.getElementById('player-role').textContent = `Vous êtes : ${playerRole}`;
-                    }
-
-                    document.getElementById('status').textContent = `Au tour du joueur ${currentPlayer}`;
-
-                    updateBoard();
-
-                    switch (gameData.gameStatus) {
-                        case 'waiting':
-                            document.getElementById('status').textContent = "En attente d'un autre joueur...";
-                            break;
-                        case 'active':
-                            if (gameData.players.White && gameData.players.Black) {
-                                document.getElementById('status').textContent = `La partie commence ! Au tour du joueur ${gameData.currentPlayer}`;
-                                playStartGameSound();
-                            }
-                            break;
-                        case 'finished':
-                            document.getElementById('status').textContent = `Partie terminée. Le gagnant est ${gameData.winner}`;
-                            break;
-                    }
-                }
-            });
-        }
-
-        function playStartGameSound() {
-            const oscillator = audioContext.createOscillator();
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
-
-            const gainNode = audioContext.createGain();
-            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-
-            oscillator.start();
-            oscillator.stop(audioContext.currentTime + 1);
-        }
-
-        function updateBoard() {
-            const boardElement = document.getElementById('board');
-            gameBoard.forEach((row, i) => {
-                row.forEach((cell, j) => {
-                    const index = i * 15 + j;
-                    const cellElement = boardElement.children[index];
-                    cellElement.innerHTML = '';
-                    if (cell) {
-                        const piece = document.createElement('div');
-                        piece.className = `piece piece-${cell}`;
-                        cellElement.appendChild(piece);
-                    }
-                });
-            });
-        }
-
-        function updateGameStatus() {
-            if (gameActive) {
-                document.getElementById('status').textContent = `Au tour du joueur ${currentPlayer}`;
-            } else if (playerRole === 'White') {
-                document.getElementById('status').textContent = "En attente d'un autre joueur...";
-            } else if (playerRole === 'Black') {
-                document.getElementById('status').textContent = "En attente du début de la partie...";
-            } else {
-                document.getElementById('status').textContent = "En attente d'une partie...";
-            }
-        }
-
-
-        document.addEventListener('DOMContentLoaded', () => {
-            createBoard();
-            document.getElementById('create-game').addEventListener('click', createGame);
-            document.getElementById('join-game').addEventListener('click', joinGame);
-            document.getElementById('play-solo').addEventListener('click', playSolo);
-            document.getElementById('replay').addEventListener('click', resetGame);
-            updatePlayerCounter();
-            document.getElementById('connect-phantom').addEventListener('click', connectPhantomWallet);
-            document.getElementById('donation-button').addEventListener('click', sendSolWithPhantom);  // Ligne modifiée
-        });
-
+        import GameState from './gameState.js';
+        // Vous pouvez maintenant utiliser GameState ici
     </script>
+    <script src="js/gamestate.js"></script>
 </body>
-
 </html>
