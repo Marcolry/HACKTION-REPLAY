@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Tic-Tac-Toe</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #game-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        #board {
+            display: inline-grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 5px;
+            background-color: #d4af37;
+            border: 2px solid #b8860b;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: #f0d984;
+            border: 1px solid #d4af37;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 48px;
+            font-weight: bold;
+        }
+
+        .cell:hover {
+            background-color: #ffe6a8;
+        }
+
+        .piece-X {
+            color: #333;
+        }
+
+        .piece-O {
+            color: #fff;
+        }
+
+        #status, #score, #player-counter {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        #buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #create-game {
+            background-color: #4CAF50;
+        }
+
+        #join-game {
+            background-color: #2196F3;
+        }
+
+        #play-solo {
+            background-color: #FF9800;
+        }
+
+        button:hover {
+            filter: brightness(1.1);
+        }
+
+        #replay {
+            display: none;
+            background-color: #9C27B0;
+        }
+
+        #game-id {
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        #player-role {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        #home-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #000000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #home-button:hover {
+            background-color: #333333;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="home-button" onclick="window.location.href='/'">Home</button>
+    <div id="game-container">
+        <div id="player-counter">Connected players: 1</div>
+        <div id="board"></div>
+        <div id="status">Waiting for a game...</div>
+        <div id="game-id"></div>
+        <div id="buttons">
+            <button id="create-game">Create Game</button>
+            <button id="join-game">Join Game</button>
+            <button id="play-solo">Play Solo</button>
+        </div>
+        <button id="replay">Play Again</button>
+        <div id="player-role">You are: Spectator</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue, update, get, onDisconnect } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+
+        const firebaseConfig = {
+            // Your Firebase configuration here
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        let currentPlayer = 'X';
+        let gameBoard = ['', '', '', '', '', '', '', '', ''];
+        let gameActive = false;
+        let playerRole = 'spectator';
+        let currentGameId = null;
+        let isSoloMode = false;
+        let connectedPlayers = 1;
+
+        function createBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.addEventListener('click', () => makeMove(i));
+                board.appendChild(cell);
+            }
+        }
+
+        function makeMove(index) {
+            if (!gameActive || (!isSoloMode && playerRole !== currentPlayer)) return;
+            if (gameBoard[index] === '') {
+                gameBoard[index] = currentPlayer;
+                updateCell(index);
+
+                if (checkWin()) {
+                    endGame(`${currentPlayer} wins!`);
+                } else if (gameBoard.every(cell => cell !== '')) {
+                    endGame("It's a draw!");
+                } else {
+                    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                    updateStatus();
+                    if (!isSoloMode) {
+                        updateGameInDatabase();
+                    }
+                }
+            }
+        }
+
+        function updateCell(index) {
+            const cell = document.getElementsByClassName('cell')[index];
+            cell.textContent = gameBoard[index];
+            cell.classList.add(`piece-${gameBoard[index]}`);
+        }
+
+        function checkWin() {
+            const winPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+            return winPatterns.some(pattern => 
+                pattern.every(index => gameBoard[index] === currentPlayer)
+            );
+        }
+
+        function endGame(message) {
+            gameActive = false;
+            document.getElementById('status').textContent = message;
+            document.getElementById('replay').style.display = 'inline-block';
+            if (!isSoloMode) {
+                update(ref(database, `games/${currentGameId}`), {
+                    gameStatus: 'finished',
+                    winner: currentPlayer,
+                    gameActive: false
+                });
+            }
+        }
+
+        function updateStatus() {
+            document.getElementById('status').textContent = `${currentPlayer}'s turn`;
+        }
+
+        function resetGame() {
+            gameBoard = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            gameActive = true;
+            updateStatus();
+            document.getElementById('replay').style.display = 'none';
+            createBoard();
+            if (!isSoloMode) {
+                updateGameInDatabase();
+            }
+        }
+
+        function generateGameId() {
+            return Math.random().toString(36).substr(2, 6).toUpperCase();
+        }
+
+        function createGame() {
+            currentGameId = generateGameId();
+            playerRole = 'X';
+            updateGameInDatabase();
+            startListeningToGameChanges();
+            document.getElementById('game-id').textContent = `Game ID: ${currentGameId}`;
+            document.getElementById('player-role').textContent = `You are: X`;
+            incrementPlayerCounter();
+        }
+
+        function joinGame() {
+            const gameId = prompt("Enter the game ID:");
+            if (gameId) {
+                currentGameId = gameId;
+                playerRole = 'O';
+                startListeningToGameChanges();
+                document.getElementById('game-id').textContent = `Game ID: ${currentGameId}`;
+                document.getElementById('player-role').textContent = `You are: O`;
+                incrementPlayerCounter();
+            }
+        }
+
+        function playSolo() {
+            isSoloMode = true;
+            gameActive = true;
+            playerRole = 'both';
+            resetGame();
+            document.getElementById('player-role').textContent = `You are: Playing solo`;
+        }
+
+        function updateGameInDatabase() {
+            set(ref(database, `games/${currentGameId}`), {
+                board: gameBoard,
+                currentPlayer: currentPlayer,
+                gameActive: gameActive,
+                gameStatus: gameActive ? 'active' : 'finished'
+            });
+        }
+
+        function startListeningToGameChanges() {
+            const gameRef = ref(database, `games/${currentGameId}`);
+            onValue(gameRef, (snapshot) => {
+                const gameData = snapshot.val();
+                if (gameData) {
+                    gameBoard = gameData.board;
+                    currentPlayer = gameData.currentPlayer;
+                    gameActive = gameData.gameActive;
+                    updateBoard();
+                    updateStatus();
+                }
+            });
+        }
+
+        function updateBoard() {
+            gameBoard.forEach((value, index) => {
+                const cell = document.getElementsByClassName('cell')[index];
+                cell.textContent = value;
+                cell.className = `cell ${value ? `piece-${value}` : ''}`;
+            });
+        }
+
+        function incrementPlayerCounter() {
+            const counterRef = ref(database, 'connectedPlayers');
+            get(counterRef).then((snapshot) => {
+                const currentCount = snapshot.val() || 0;
+                set(counterRef, currentCount + 1);
+            });
+
+            onDisconnect(counterRef).transaction((currentCount) => {
+                return (currentCount || 1) - 1;
+            });
+        }
+
+        function updatePlayerCounter() {
+            const counterRef = ref(database, 'connectedPlayers');
+            onValue(counterRef, (snapshot) => {
+                connectedPlayers = snapshot.val() || 1;
+                document.getElementById('player-counter').textContent = `Connected players: ${connectedPlayers}`;
+            });
+        }
+
+        document.getElementById('create-game').addEventListener('click', createGame);
+        document.getElementById('join-game').addEventListener('click', joinGame);
+        document.getElementById('play-solo').addEventListener('click', playSolo);
+        document.getElementById('replay').addEventListener('click', resetGame);
+
+        createBoard();
+        updatePlayerCounter();
+    </script>
+</body>
+</html>
